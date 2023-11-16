@@ -27,8 +27,8 @@ public class WorkWithPopupNotification {
     private final AssertSwitchBetweenWindows assertion = new AssertSwitchBetweenWindows();
 
     @Test
-    @DisplayName("Changing the font of pasted text")
-    @Description("Should ")
+    @DisplayName("Interaction with popup window")
+    @Description("Should close the window and display an information message")
     void workWithPopupNotification() throws InterruptedException {
         //Click for JS Alert
         WebElement jsAlert = seleniumMethods.searchElementByXpath(clickJsAlertXpath);
