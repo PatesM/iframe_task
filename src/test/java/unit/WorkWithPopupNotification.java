@@ -1,7 +1,6 @@
 package unit;
 
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_KEY;
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_VALUE;
+import static org.example.configurations.Driver.quitDriver;
 import static org.example.configurations.Properties.JS_ALERTS_URL;
 import static org.example.flows.WorkWithPopupNotificationFlow.alertText;
 import static org.example.flows.WorkWithPopupNotificationFlow.clickJsAlertXpath;
@@ -11,63 +10,68 @@ import static org.example.flows.WorkWithPopupNotificationFlow.expectedAlertResul
 import static org.example.flows.WorkWithPopupNotificationFlow.expectedAlertText;
 import static org.example.flows.WorkWithPopupNotificationFlow.expectedConfirmResultText;
 import static org.example.flows.WorkWithPopupNotificationFlow.expectedPromptResultText;
-import static org.example.flows.WorkWithPopupNotificationFlow.jsAlertResultId;
+import static org.example.flows.WorkWithPopupNotificationFlow.jsAlertResultXpath;
 
 import io.qameta.allure.Description;
 import org.example.steps.asserts.AssertSwitchBetweenWindows;
-import org.example.steps.selenium_steps.SeleniumMethods;
+import org.example.steps.selenide_steps.SelenideMethods;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebElement;
 
 public class WorkWithPopupNotification {
 
-    private final SeleniumMethods seleniumMethods = new SeleniumMethods(CHROME_WEB_DRIVER_KEY,
-        CHROME_WEB_DRIVER_VALUE, JS_ALERTS_URL);
+    private final SelenideMethods selenideMethods = new SelenideMethods();
     private final AssertSwitchBetweenWindows assertion = new AssertSwitchBetweenWindows();
+
+    @BeforeEach
+    void setUp() {
+        selenideMethods.openPage(JS_ALERTS_URL);
+    }
+
+    @AfterEach
+    void tearDown() {
+        selenideMethods.closeBrowser();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        quitDriver();
+    }
 
     @Test
     @DisplayName("Interaction with popup window")
     @Description("Should close the window and display an information message")
-    void workWithPopupNotification() throws InterruptedException {
+    void workWithPopupNotification() {
         //Click for JS Alert
-        WebElement jsAlert = seleniumMethods.searchElementByXpath(clickJsAlertXpath);
-        seleniumMethods.clickElement(jsAlert);
+        selenideMethods.clickElement(clickJsAlertXpath);
 
-        String jsAlertText = seleniumMethods.getAlertText();
+        String jsAlertText = selenideMethods.acceptAlert();
 
         assertion.assertionAlertTextCorrect(expectedAlertText, jsAlertText);
 
-        seleniumMethods.acceptAlert();
-
-        WebElement jsAlertResult = seleniumMethods.searchElementById(jsAlertResultId);
-        String jsAlertResultText = seleniumMethods.getElementText(jsAlertResult);
+        String jsAlertResultText = selenideMethods.getElementText(jsAlertResultXpath);
 
         assertion.assertionResultTextCorrect(expectedAlertResultText, jsAlertResultText);
 
         // Click for JS Confirm
-        WebElement jsConfirm = seleniumMethods.searchElementByXpath(clickJsConfirmXpath);
-        seleniumMethods.clickElement(jsConfirm);
+        selenideMethods.clickElement(clickJsConfirmXpath);
 
-        seleniumMethods.dismissAlert();
+        selenideMethods.dismissAlert();
 
-        WebElement jsConfirmResult = seleniumMethods.searchElementById(jsAlertResultId);
-        String jsConfirmResultText = seleniumMethods.getElementText(jsConfirmResult);
+        String jsConfirmResultText = selenideMethods.getElementText(jsAlertResultXpath);
 
         assertion.assertionResultTextCorrect(expectedConfirmResultText, jsConfirmResultText);
 
         // Click for JS Prompt
-        WebElement jsPrompt = seleniumMethods.searchElementByXpath(clickJsPromptXpath);
-        seleniumMethods.clickElement(jsPrompt);
+        selenideMethods.clickElement(clickJsPromptXpath);
 
-        seleniumMethods.insertTextIntoAlert(alertText);
-        seleniumMethods.acceptAlert();
+        selenideMethods.insertTextIntoAlert(alertText);
 
-        WebElement jsPromptResult = seleniumMethods.searchElementById(jsAlertResultId);
-        String jsPromptResultText = seleniumMethods.getElementText(jsPromptResult);
+        String jsPromptResultText = selenideMethods.getElementText(jsAlertResultXpath);
 
         assertion.assertionResultTextCorrect(expectedPromptResultText, jsPromptResultText);
-
-        seleniumMethods.quitDriver();
     }
 }

@@ -1,53 +1,61 @@
 package unit;
 
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_KEY;
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_VALUE;
+import static org.example.configurations.Driver.quitDriver;
 import static org.example.configurations.Properties.WINDOWS_URL;
 import static org.example.flows.SwitchBetweenWindowsFlow.clickHereRefXpath;
-import static org.example.flows.SwitchBetweenWindowsFlow.expectedPageText;
 import static org.example.flows.SwitchBetweenWindowsFlow.newPageTextXpath;
 
 import io.qameta.allure.Description;
 import org.example.steps.asserts.AssertSwitchBetweenWindows;
-import org.example.steps.selenium_steps.SeleniumMethods;
+import org.example.steps.selenide_steps.SelenideMethods;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebElement;
 
 public class SwitchBetweenWindows {
 
-    private final SeleniumMethods seleniumMethods = new SeleniumMethods(CHROME_WEB_DRIVER_KEY,
-        CHROME_WEB_DRIVER_VALUE, WINDOWS_URL);
+    private final SelenideMethods selenideMethods = new SelenideMethods();
     private final AssertSwitchBetweenWindows assertion = new AssertSwitchBetweenWindows();
+
+    @BeforeEach
+    void setUp() {
+        selenideMethods.openPage(WINDOWS_URL);
+    }
+
+    @AfterEach
+    void tearDown() {
+        selenideMethods.closeBrowser();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        quitDriver();
+    }
 
     @Test
     @DisplayName("Switching between pages ")
     @Description("Should open the new page and close tab")
-    public void switchBetweenWindows() throws InterruptedException {
+    public void switchBetweenWindows() {
+        String originalPageTitle = selenideMethods.getWindowTitle();
 
-        String originalHandle = seleniumMethods.getWindowHandle();
+        selenideMethods.clickElement(clickHereRefXpath);
 
-        WebElement clickHereRef = seleniumMethods.searchElementByXpath(clickHereRefXpath);
-        seleniumMethods.clickElement(clickHereRef);
+        selenideMethods.switchTab(1);
 
-        String newHandle = seleniumMethods.getNewWindowHandle(originalHandle);
+        String newPageTitle = selenideMethods.getWindowTitle();
+        String newPageText = selenideMethods.getElementText(newPageTextXpath);
 
-        seleniumMethods.switchTab(newHandle);
+        assertion.assertionNewTabOpen(originalPageTitle, newPageTitle);
+        assertion.assertionPageTextCorrect("New Window", newPageText);
 
-        WebElement newPageTextElement = seleniumMethods.searchElementByXpath(newPageTextXpath);
-        String actualPageText = seleniumMethods.getElementText(newPageTextElement);
+        selenideMethods.closeTab();
 
-        assertion.assertionNewTabOpen(originalHandle, newHandle);
-        assertion.assertionPageTextCorrect(expectedPageText, actualPageText);
+        selenideMethods.switchTab(0);
 
-        seleniumMethods.closeTab();
+        String currentPageTitle = selenideMethods.getWindowTitle();
 
-        seleniumMethods.switchTab(originalHandle);
-
-        String currentHandle = seleniumMethods.getWindowHandle();
-
-        assertion.assertionNewTabOpen(newHandle, currentHandle);
-
-        seleniumMethods.quitDriver();
+        assertion.assertionNewTabOpen(newPageTitle, currentPageTitle);
     }
 }

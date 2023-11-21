@@ -1,21 +1,24 @@
 package org.example.configurations;
 
-import java.time.Duration;
+import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.Selenide;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Wait;
 
 public class Driver {
 
-    private static final WebDriver driver = new ChromeDriver();
+    public static Wait<WebDriver> wait;
 
-    public static WebDriver configureWebDriver(String webDriverKey, String webDriverValue,
-        String url) {
-        System.setProperty(webDriverKey, webDriverValue);
+    public static void configureWebDriver() {
+        WebDriverManager.chromedriver().setup();
+        Configuration.browser = "chrome";
+        Configuration.browserSize = "1920x1080";
+        Configuration.headless = false;
+        Configuration.timeout = 8000;
+    }
 
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-        driver.manage().window().maximize();
-        driver.get(url);
-
-        return driver;
+    public static void quitDriver() {
+        Selenide.closeWebDriver();
     }
 }

@@ -1,7 +1,6 @@
 package unit;
 
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_KEY;
-import static org.example.configurations.Properties.CHROME_WEB_DRIVER_VALUE;
+import static org.example.configurations.Driver.quitDriver;
 import static org.example.configurations.Properties.FRAMES_URL;
 import static org.example.flows.InteractWithElementsInsideFrameFlow.boldButtonXpath;
 import static org.example.flows.InteractWithElementsInsideFrameFlow.editButtonXpath;
@@ -11,47 +10,54 @@ import static org.example.flows.InteractWithElementsInsideFrameFlow.selectAllBut
 import static org.example.flows.InteractWithElementsInsideFrameFlow.textFieldId;
 
 import io.qameta.allure.Description;
-import org.example.steps.selenium_steps.SeleniumMethods;
+import org.example.steps.selenide_steps.SelenideMethods;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.WebElement;
 
 public class InteractWithElementsInsideFrame {
 
-    private final SeleniumMethods seleniumMethods = new SeleniumMethods(CHROME_WEB_DRIVER_KEY,
-        CHROME_WEB_DRIVER_VALUE, FRAMES_URL);
+    private final SelenideMethods selenideMethods = new SelenideMethods();
+
+    @BeforeEach
+    void setUp() {
+        selenideMethods.openPage(FRAMES_URL);
+    }
+
+    @AfterEach
+    void tearDown() {
+        selenideMethods.closeBrowser();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        quitDriver();
+    }
 
     @Test
     @DisplayName("Changing the font of pasted text")
     @Description("Should paste the text and change the font to Bold")
-    public void interactWithElementsInsideFrame() throws InterruptedException {
+    public void interactWithElementsInsideFrame() {
+        selenideMethods.clickElement(iFrameRefXpath);
 
-        WebElement iframeRef = seleniumMethods.searchElementByXpath(iFrameRefXpath);
-        seleniumMethods.clickElement(iframeRef);
+        selenideMethods.clickElement(editButtonXpath);
 
-        WebElement editButton = seleniumMethods.searchElementByXpath(editButtonXpath);
-        seleniumMethods.clickElement(editButton);
+        selenideMethods.clickElement(selectAllButtonXpath);
 
-        WebElement selectAllButton = seleniumMethods.searchElementByXpath(selectAllButtonXpath);
-        seleniumMethods.clickElement(selectAllButton);
+        selenideMethods.switchFrame(iFrameName);
 
-        seleniumMethods.switchFrame(iFrameName);
+        selenideMethods.clearTextField(textFieldId);
 
-        WebElement textField = seleniumMethods.searchElementById(textFieldId);
-        seleniumMethods.clearTextField(textField);
+        selenideMethods.insertIntoTextField(textFieldId, "Hello World");
 
-        seleniumMethods.insertIntoTextField(textField, "Hello World");
+        selenideMethods.switchDefaultFrame();
 
-        seleniumMethods.switchDefaultFrame();
+        selenideMethods.clickElement(editButtonXpath);
 
-        seleniumMethods.clickElement(editButton);
+        selenideMethods.clickElement(selectAllButtonXpath);
 
-        WebElement selectAllButtonNew = seleniumMethods.searchElementByXpath(selectAllButtonXpath);
-        seleniumMethods.clickElement(selectAllButtonNew);
-
-        WebElement boldButton = seleniumMethods.searchElementByXpath(boldButtonXpath);
-        seleniumMethods.clickElement(boldButton);
-
-        seleniumMethods.quitDriver();
+        selenideMethods.clickElement(boldButtonXpath);
     }
 }
